@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>2015 Camaro 2LT — The Handbook</title>
+<meta name="description" content="The handbook for Lucian's 2015 Chevrolet Camaro 2LT: a detailed spinning 3D model of the car, its specs, and every cockpit control explained."/>
+<style>
+  :root{--gold:#c8a24a;--blue:#57c7ff;--ink:#e8ebee;--dim:#9aa3ab;--panel:#111418;--line:#23282e}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#07080a;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+  header{padding:34px 20px 6px;text-align:center}
+  .kicker{letter-spacing:.42em;font-size:11px;color:var(--gold);text-transform:uppercase}
+  h1{margin:10px 0 4px;font-size:clamp(30px,6vw,54px);font-weight:800;letter-spacing:.02em}
+  h1 span{color:var(--blue)}
+  .sub{color:var(--dim);font-size:15px;margin:0 auto;max-width:640px;line-height:1.55}
+  #stage{position:relative;height:min(72vh,640px);margin:14px auto 0;max-width:1180px}
+  #c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+  #c:active{cursor:grabbing}
+  #fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:var(--dim);text-align:center;padding:24px}
+  .hud{position:absolute;left:14px;bottom:12px;font-size:12px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:14px 16px 4px;max-width:1180px;margin:0 auto}
+  button,.chipbtn{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:13px;cursor:pointer;letter-spacing:.04em}
+  button:hover,.chipbtn:hover{border-color:var(--gold)}
+  button.on{border-color:var(--gold);color:var(--gold)}
+  .swatches{display:flex;gap:8px;align-items:center;justify-content:center;padding:10px 16px 0;flex-wrap:wrap}
+  .sw{width:30px;height:30px;border-radius:50%;border:2px solid #2c3138;padding:0}
+  .sw.on{border-color:var(--gold)}
+  .swlabel{font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-right:2px}
+  main{max-width:1180px;margin:0 auto;padding:26px 18px 60px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .card h2{margin:0 0 12px;font-size:17px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  .card p,.card li{color:#c9cfd5;font-size:14.5px;line-height:1.65}
+  .card ul{margin:0;padding-left:18px}
+  .card li{margin-bottom:7px}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  td{padding:7px 0;border-bottom:1px solid var(--line);color:#c9cfd5}
+  td:first-child{color:var(--dim);width:44%;letter-spacing:.05em}
+  tr:last-child td{border-bottom:none}
+  .wide{grid-column:1/-1}
+  .cta{display:inline-block;margin-top:10px;background:var(--gold);color:#141414;font-weight:700;border-radius:999px;padding:11px 22px;text-decoration:none;font-size:14px}
+  .cta:hover{background:#dcb95e}
+  figure{margin:0}
+  figure img{width:100%;border-radius:10px;display:block}
+  figcaption{color:var(--dim);font-size:12.5px;margin-top:8px;line-height:1.5}
+  footer{text-align:center;color:#5c646c;font-size:12px;padding:0 16px 34px;letter-spacing:.06em}
+  b.k{color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+  <div class="kicker">The Handbook</div>
+  <h1>2015 CAMARO <span>2LT</span></h1>
+  <p class="sub">Lucian's car, studied like a system. The model below is the car itself — black on black, fifth-generation coupe — spinning on the turntable. Drag it, zoom it, pull its layers apart, flip the headlights on. The manual is built around it.</p>
+</header>
+
+<div id="stage">
+  <canvas id="c"></canvas>
+  <div id="fallback"><p>The 3D model needs WebGL, which this browser has off.<br/>The handbook below still has the whole car in it.</p></div>
+  <div class="hud">Drag to orbit · Scroll to zoom · It spins on its own</div>
+</div>
+
+<div class="bar" role="group" aria-label="Model controls">
+  <button id="btnSpin" class="on">⏸ Spin: On</button>
+  <button id="btnLights">💡 Headlights</button>
+  <button id="btnLayers">🧱 Layers</button>
+  <button data-view="front34">Front ¾</button>
+  <button data-view="side">Side</button>
+  <button data-view="rear34">Rear ¾</button>
+  <button data-view="top">Top</button>
+  <button data-view="front">Head-on</button>
+</div>
+<div class="swatches" role="group" aria-label="Paint colors">
+  <span class="swlabel">Paint</span>
+  <button class="sw on" data-color="0x0b0b0d" data-name="Black" style="background:#0b0b0d" aria-label="Black (his car)"></button>
+  <button class="sw" data-color="0xb1121d" data-name="Red Hot" style="background:#b1121d" aria-label="Red Hot"></button>
+  <button class="sw" data-color="0x1d3f8f" data-name="Blue Velvet" style="background:#1d3f8f" aria-label="Blue Velvet"></button>
+  <button class="sw" data-color="0xd8d9db" data-name="Summit White" style="background:#d8d9db" aria-label="Summit White"></button>
+  <button class="sw" data-color="0x8f9296" data-name="Silver Ice" style="background:#8f9296" aria-label="Silver Ice"></button>
+  <span id="colorName" style="font-size:13px;color:var(--dim)">Black — his car</span>
+</div>
+
+<main>
+  <div class="grid">
+    <section class="card">
+      <h2>The Car</h2>
+      <table>
+        <tr><td>Year / Model</td><td>2015 Chevrolet Camaro Coupe</td></tr>
+        <tr><td>Trim</td><td>2LT</td></tr>
+        <tr><td>Engine</td><td>3.6L V6 (LFX)</td></tr>
+        <tr><td>Power</td><td>323 hp · 278 lb-ft</td></tr>
+        <tr><td>Drive</td><td>Rear-wheel drive</td></tr>
+        <tr><td>Paint / Wheels</td><td>Black / black 19″ alloys</td></tr>
+        <tr><td>Odometer</td><td>86,885 mi — as photographed on his dash</td></tr>
+        <tr><td>Home turf</td><td>The DMV loop — DC · Maryland · Virginia</td></tr>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Cockpit — Every Control</h2>
+      <ul>
+        <li><b class="k">Twin gauge pods</b> — speedo left, tach right, and the Driver Information Center between them: trip, tire pressures, oil life, and battery voltage (his photo reads 13.9 V).</li>
+        <li><b class="k">Wheel controls</b> — cruise on the left spoke, DIC menu and audio on the right. The wheel turns itself in Lucian mode; you work the dash.</li>
+        <li><b class="k">MyLink 7″ screen</b> — Radio, phone, settings and the backup camera, on the car's actual screen in the center stack.</li>
+        <li><b class="k">Radio / HVAC stack</b> — volume and tune knobs, fan and temperature dials, A/C and recirc under the screen.</li>
+        <li><b class="k">4-pack aux gauges</b> — oil pressure, oil temperature, battery volts and transmission temp, low on the console ahead of the shifter.</li>
+        <li><b class="k">Shifter &amp; console</b> — gear select, sport mode, traction control and the hazard switch.</li>
+      </ul>
+      <a class="cta" href="https://camaro-cockpit-game.vercel.app/">Sit in it — the interactive cockpit →</a>
+    </section>
+
+    <section class="card">
+      <h2>Reading The Car</h2>
+      <ul>
+        <li><b class="k">DIC first</b> — the center display is the car's own handbook page: it reports tire pressure per corner, oil-life percentage and voltage before anything feels wrong.</li>
+        <li><b class="k">Aux gauges are the truth</b> — watch oil pressure and trans temp on a hard DMV run; the 4-pack is there so the V6 can be driven hard and honestly.</li>
+        <li><b class="k">Door-jamb sticker wins</b> — tire pressures and load limits live on the driver's door jamb, not on the internet. Check there first.</li>
+        <li><b class="k">86,885 and counting</b> — every number in this handbook traces to the real car, not a brochure car.</li>
+      </ul>
+    </section>
+
+    <section class="card wide">
+      <figure>
+        <img src="cockpit.jpg" alt="The real dash of Lucian's 2015 Camaro 2LT — twin gauge pods, MyLink screen and the odometer at 86,885 miles"/>
+        <figcaption>The source of truth for this whole handbook: Lucian's actual dash. Odometer 86,885 mi, DIC reading “Battery Voltage 13.9 V.” Every control listed above sits in this photo — the interactive cockpit at the link above is built directly from it.</figcaption>
+      </figure>
+    </section>
+  </div>
+</main>
+
+<footer>2015 CAMARO 2LT — THE HANDBOOK · BUILT FROM THE REAL CAR · MODEL SPINS ABOVE</footer>
+
+<script>
+window.__initCamaro = function(THREE){
+
+const canvas = document.getElementById('c');
+let renderer;
+try{
+  renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+}catch(e){
+  document.getElementById('fallback').style.display='flex';
+  throw e;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b0d10);
+scene.fog = new THREE.Fog(0x0b0d10, 22, 42);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+{
+  const cv = document.createElement('canvas'); cv.width = 1024; cv.height = 512;
+  const g = cv.getContext('2d');
+  const grad = g.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0, '#14181d'); grad.addColorStop(0.45, '#232a31');
+  grad.addColorStop(0.55, '#2c333b'); grad.addColorStop(1, '#060708');
+  g.fillStyle = grad; g.fillRect(0, 0, 1024, 512);
+  g.fillStyle = 'rgba(255,255,255,0.95)'; g.fillRect(110, 148, 300, 26); g.fillRect(614, 148, 300, 26);
+  g.fillStyle = 'rgba(160,190,220,0.55)'; g.fillRect(430, 96, 170, 16);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.mapping = THREE.EquirectangularReflectionMapping; tex.colorSpace = THREE.SRGBColorSpace;
+  scene.environment = pmrem.fromEquirectangular(tex).texture;
+}
+
+const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+camera.position.set(5.6, 2.0, 5.2);
+
+
+class SimpleOrbit{
+  constructor(cam, dom){
+    this.cam = cam; this.target = new THREE.Vector3(0, 0.55, 0);
+    this.az = 0.821; this.el = 0.186; this.r = 7.83;
+    this.autoRotate = true; this.spinSpeed = 0.35;
+    this.pointers = new Map(); this.pinchD = 0;
+    dom.addEventListener('pointerdown', e=>{ this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY}); try{ dom.setPointerCapture(e.pointerId); }catch(_){} });
+    dom.addEventListener('pointermove', e=>{
+      if(!this.pointers.has(e.pointerId)) return;
+      const prev = this.pointers.get(e.pointerId);
+      const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
+      this.pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+      if(this.pointers.size === 1){
+        this.az -= dx * 0.0052;
+        this.el = Math.max(-0.02, Math.min(1.48, this.el + dy * 0.0052));
+      } else if(this.pointers.size === 2){
+        const pts = [...this.pointers.values()];
+        const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        if(this.pinchD > 0 && d > 0) this.r = Math.max(4.2, Math.min(13, this.r * this.pinchD / d));
+        this.pinchD = d;
+      }
+    });
+    const up = e=>{ this.pointers.delete(e.pointerId); if(this.pointers.size < 2) this.pinchD = 0; };
+    dom.addEventListener('pointerup', up); dom.addEventListener('pointercancel', up);
+    dom.addEventListener('wheel', e=>{ e.preventDefault(); this.r = Math.max(4.2, Math.min(13, this.r * (1 + Math.sign(e.deltaY) * 0.09))); }, {passive:false});
+  }
+  setView(az, el, r){ this.az = az; this.el = el; this.r = r; }
+  get dragging(){ return this.pointers.size > 0; }
+  update(dt){
+    if(this.autoRotate && !this.dragging) this.az += this.spinSpeed * dt;
+    const ce = Math.cos(this.el);
+    this.cam.position.set(
+      this.target.x + this.r * ce * Math.sin(this.az),
+      this.target.y + this.r * Math.sin(this.el),
+      this.target.z + this.r * ce * Math.cos(this.az));
+    this.cam.lookAt(this.target);
+  }
+}
+
+const controls = new SimpleOrbit(camera, canvas);
+
+/* ---------- lights ---------- */
+scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+const back = new THREE.DirectionalLight(0x9db8d9, 0.8); back.position.set(-6,4,-6); scene.add(back);
+const key = new THREE.DirectionalLight(0xffffff, 1.6);
+key.position.set(6, 9, 4); key.intensity = 2.1;
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left=-6; key.shadow.camera.right=6; key.shadow.camera.top=6; key.shadow.camera.bottom=-6;
+scene.add(key);
+const rim = new THREE.PointLight(0x57c7ff, 26, 30); rim.position.set(-7, 3.5, -5); scene.add(rim);
+const warm = new THREE.PointLight(0xc8a24a, 18, 30); warm.position.set(7, 2, -6); scene.add(warm);
+
+/* ---------- ground & turntable ---------- */
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(30, 48),
+  new THREE.MeshStandardMaterial({color:0x0a0b0d, roughness:1})
+);
+ground.rotation.x = -Math.PI/2; ground.position.y = -0.081; ground.receiveShadow = true; scene.add(ground);
+
+const table = new THREE.Mesh(
+  new THREE.CylinderGeometry(3.15, 3.25, 0.08, 72),
+  new THREE.MeshStandardMaterial({color:0x14171b, roughness:0.35, metalness:0.6})
+);
+table.position.y = -0.04; table.receiveShadow = true; scene.add(table);
+const ring = new THREE.Mesh(
+  new THREE.TorusGeometry(3.15, 0.016, 10, 100),
+  new THREE.MeshStandardMaterial({color:0xc8a24a, emissive:0xc8a24a, emissiveIntensity:0.9, metalness:1, roughness:0.3})
+);
+ring.rotation.x = Math.PI/2; ring.position.y = 0.002; scene.add(ring);
+
+/* ---------- materials ---------- */
+const paint  = new THREE.MeshPhysicalMaterial({color:0x0b0b0d, metalness:0.25, roughness:0.30, clearcoat:1, clearcoatRoughness:0.08, envMapIntensity:1.0});
+const glassM = new THREE.MeshPhysicalMaterial({color:0x1b2836, metalness:0.1, roughness:0.05, clearcoat:1, envMapIntensity:1.4});
+const trimBlk= new THREE.MeshStandardMaterial({color:0x0c0d0f, roughness:0.6, metalness:0.3, envMapIntensity:0.35});
+const grilleM= new THREE.MeshStandardMaterial({color:0x08090a, roughness:0.85, metalness:0.2, envMapIntensity:0.25});
+const chrome = new THREE.MeshStandardMaterial({color:0xd9dde2, roughness:0.18, metalness:1});
+const gold   = new THREE.MeshStandardMaterial({color:0xe0aa2e, roughness:0.32, metalness:0.75, emissive:0x241a02, emissiveIntensity:0.7});
+const tireM  = new THREE.MeshStandardMaterial({color:0x0a0a0a, roughness:0.95, envMapIntensity:0.2});
+const rimM   = new THREE.MeshStandardMaterial({color:0x17181a, roughness:0.35, metalness:0.8});
+const discM  = new THREE.MeshStandardMaterial({color:0x777c84, roughness:0.38, metalness:1});
+const spokeM = new THREE.MeshStandardMaterial({color:0x33373d, roughness:0.35, metalness:0.9});
+const barrelM= new THREE.MeshStandardMaterial({color:0x0b0b0b, roughness:0.85, metalness:0.2, envMapIntensity:0.2});
+const redLensM = new THREE.MeshStandardMaterial({color:0x55060a, emissive:0xd21f2c, emissiveIntensity:0.55, roughness:0.25});
+const headLensM= new THREE.MeshStandardMaterial({color:0xdfeaf2, emissive:0xcfe6ff, emissiveIntensity:0.25, roughness:0.15, metalness:0.4});
+const haloM = new THREE.MeshStandardMaterial({color:0xeaf6ff, emissive:0xbfe0ff, emissiveIntensity:0.7});
+
+const car = new THREE.Group();
+scene.add(car);
+function M(geo, mat, x=0, y=0, z=0, parent=car){
+  const m = new THREE.Mesh(geo, mat);
+  m.position.set(x,y,z); m.castShadow = true; m.receiveShadow = false;
+  parent.add(m); return m;
+}
+function extrudeProfile(points, depth, mat, bevel=0.04){
+  const s = new THREE.Shape();
+  s.moveTo(points[0][0], points[0][1]);
+  for(let i=1;i<points.length;i++) s.lineTo(points[i][0], points[i][1]);
+  s.closePath();
+  const g = new THREE.ExtrudeGeometry(s, {depth, bevelEnabled:true, bevelThickness:bevel, bevelSize:bevel, bevelSegments:3, steps:1});
+  g.translate(0,0,-depth/2);
+  return M(g, mat);
+}
+
+const layerGlass = []; const layerWheels = [];
+/* ---------- body: 5th-gen silhouette, extruded ---------- */
+extrudeProfile([
+  [-2.34,0.30],[-2.43,0.52],[-2.40,0.78],[-2.28,0.93],[-1.90,0.97],
+  [-1.20,1.00],[0.60,1.00],[1.30,0.96],[2.00,0.90],[2.34,0.84],
+  [2.44,0.72],[2.45,0.52],[2.38,0.30],[2.10,0.24],[-2.05,0.24]
+], 1.70, paint, 0.045);
+
+/* glasshouse */
+const glassHouse = extrudeProfile([
+  [-1.28,0.96],[-1.02,1.30],[-0.72,1.345],[0.18,1.36],[0.55,1.30],[1.04,0.97]
+], 1.48, glassM, 0.03);
+glassHouse.userData.baseY = glassHouse.position.y; layerGlass.push(glassHouse);
+
+/* interior layer — hidden inside the glasshouse until Layers pulls it apart */
+const leather = new THREE.MeshStandardMaterial({color:0x191b1e, roughness:0.85, envMapIntensity:0.3});
+const dashM = new THREE.MeshStandardMaterial({color:0x101215, roughness:0.7, envMapIntensity:0.3});
+M(new THREE.BoxGeometry(0.34,0.16,1.42), dashM, 0.78, 1.03, 0);                    // dash slab
+M(new THREE.BoxGeometry(0.10,0.07,0.52), dashM, 0.86, 1.13, 0);                    // dash brow / cluster hood
+const swheel = M(new THREE.TorusGeometry(0.105,0.016,10,28), leather, 0.68, 1.10, 0.40);
+swheel.rotation.y = 1.15;                                                           // steering wheel, driver side
+M(new THREE.BoxGeometry(1.05,0.07,0.30), dashM, -0.12, 1.0, 0);                     // console + rear deck base
+[-0.40, 0.40].forEach(z=>{                                                          // front seats (tops only, under the roofline)
+  M(new THREE.BoxGeometry(0.52,0.08,0.50), leather, -0.08, 1.0, z);
+  const back = M(new THREE.BoxGeometry(0.10,0.30,0.50), leather, -0.31, 1.15, z); back.rotation.z = 0.16;
+  M(new THREE.BoxGeometry(0.14,0.09,0.24), leather, -0.37, 1.335, z);
+});
+M(new THREE.BoxGeometry(0.45,0.08,1.30), leather, -0.88, 1.0, 0);                  // rear bench
+const rback = M(new THREE.BoxGeometry(0.09,0.26,1.30), leather, -1.03, 1.13, 0); rback.rotation.z = 0.12;
+/* B-pillar split (his car's two-window profile) */
+[-0.80, 0.80].forEach(z=>{ const bp = M(new THREE.BoxGeometry(0.055,0.36,0.012), paint, -0.12, 1.16, z); bp.userData.baseY = bp.position.y; layerGlass.push(bp); });
+/* chrome beltline trim */
+[-0.782, 0.782].forEach(z=>{ const bt = M(new THREE.BoxGeometry(2.15,0.016,0.010), trimBlk, -0.12, 0.985, z); bt.userData.baseY = bt.position.y; layerGlass.push(bt); });
+
+/* hood power dome + rear haunches + front fenders */
+const dome = M(new THREE.SphereGeometry(1, 32, 16), paint, 1.52, 0.865, 0); dome.scale.set(0.95,0.075,0.34);
+
+/* ---------- front fascia ---------- */
+M(new THREE.BoxGeometry(0.07,0.17,1.32), grilleM, 2.47, 0.63, 0);                 // upper grille
+M(new THREE.BoxGeometry(0.03,0.028,1.30), chrome, 2.515, 0.63, 0);                 // grille bar
+M(new THREE.BoxGeometry(0.06,0.15,1.46), grilleM, 2.46, 0.385, 0);                 // lower intake
+M(new THREE.BoxGeometry(0.42,0.045,1.72), trimBlk, 2.28, 0.205, 0);                // splitter
+function bowtie(x, y, ry){
+  const s = new THREE.Shape();
+  s.moveTo(-0.21,0.058); s.lineTo(0,0.016); s.lineTo(0.21,0.058); s.lineTo(0.21,-0.058);
+  s.lineTo(0,-0.016); s.lineTo(-0.21,-0.058); s.closePath();
+  const g = new THREE.ExtrudeGeometry(s, {depth:0.02, bevelEnabled:false});
+  const m = M(g, gold, x, y, 0); m.rotation.y = ry; return m;
+}
+bowtie(2.525, 0.63, Math.PI/2);
+bowtie(-2.525, 0.74, -Math.PI/2);
+[-1,1].forEach(s=>{
+  M(new THREE.BoxGeometry(0.10,0.115,0.44), trimBlk, 2.44, 0.735, s*0.575);        // headlight housing
+  M(new THREE.BoxGeometry(0.03,0.085,0.40), headLensM, 2.50, 0.735, s*0.575);     // lens
+  const halo = M(new THREE.TorusGeometry(0.042,0.009,10,28), haloM, 2.52, 0.735, s*0.575);
+  halo.rotation.y = Math.PI/2;                                                      // halo ring
+  const fog = M(new THREE.CylinderGeometry(0.032,0.032,0.03,20), headLensM, 2.50, 0.40, s*0.63);
+  fog.rotation.z = Math.PI/2;                                                       // fog lamp
+});
+
+/* ---------- side detail (both flanks) ---------- */
+[-1,1].forEach(s=>{
+  const z = s*0.908;
+  /* door seams + handle */
+  M(new THREE.BoxGeometry(0.014,0.50,0.008), trimBlk, 0.52, 0.60, z);
+  M(new THREE.BoxGeometry(0.014,0.50,0.008), trimBlk, -0.86, 0.60, z);
+  M(new THREE.BoxGeometry(0.17,0.028,0.02), trimBlk, -0.42, 0.875, z);
+  /* the three rear-quarter gills, exactly where his car wears them */
+  [[-0.99,0.70],[-1.08,0.655],[-1.17,0.61]].forEach(([gx,gy])=>{
+    const gill = M(new THREE.BoxGeometry(0.20,0.020,0.010), trimBlk, gx, gy, z);
+    gill.rotation.z = -0.42;
+  });
+  /* sculpted character line along the flank */
+  M(new THREE.BoxGeometry(3.35,0.013,0.006), new THREE.MeshStandardMaterial({color:0x23262c, roughness:0.5, metalness:0.6}), 0.08, 0.79, s*0.902);
+  /* side skirt */
+  M(new THREE.BoxGeometry(2.55,0.085,0.05), trimBlk, -0.02, 0.235, s*0.885);
+  /* mirror */
+  M(new THREE.BoxGeometry(0.05,0.03,0.10), paint, 0.94, 1.00, s*0.93);
+  M(new THREE.BoxGeometry(0.17,0.095,0.105), paint, 0.90, 1.045, s*0.99);
+  M(new THREE.BoxGeometry(0.012,0.075,0.085), glassM, 0.815, 1.045, s*0.99);
+  /* fuel door (passenger rear quarter on the 5th gen) */
+  if(s>0){
+    const fd = M(new THREE.CylinderGeometry(0.068,0.068,0.008,24), paint, -1.62, 0.90, 0.90);
+    fd.rotation.x = Math.PI/2;
+  }
+});
+/* shark-fin antenna, like the one in his photo */
+const fin = M(new THREE.ConeGeometry(0.055,0.13,12), paint, -0.62, 1.415, 0);
+fin.scale.set(1.6,1,0.35); fin.rotation.z = 0.35;
+
+/* ---------- rear ---------- */
+M(new THREE.BoxGeometry(0.06,0.24,1.56), trimBlk, -2.47, 0.73, 0);                // tail panel
+[-1,1].forEach(s=>{
+  M(new THREE.BoxGeometry(0.035,0.105,0.54), redLensM, -2.505, 0.735, s*0.44);     // 2014–15 tail lamp
+  M(new THREE.BoxGeometry(0.035,0.105,0.14), headLensM, -2.505, 0.735, s*0.135);   // reverse segment
+  const ex = M(new THREE.CylinderGeometry(0.042,0.046,0.12,20), chrome, -2.47, 0.30, s*0.58);
+  ex.rotation.z = Math.PI/2;                                                        // exhaust tip
+  const exIn = M(new THREE.CylinderGeometry(0.034,0.034,0.125,20), trimBlk, -2.472, 0.30, s*0.58);
+  exIn.rotation.z = Math.PI/2;
+});
+M(new THREE.BoxGeometry(0.30,0.05,1.60), trimBlk, -2.30, 0.235, 0);                // diffuser
+[-0.3,0,0.3].forEach(z=>{ M(new THREE.BoxGeometry(0.16,0.09,0.02), trimBlk, -2.38, 0.26, z); });
+const lip = M(new THREE.BoxGeometry(0.30,0.025,1.24), paint, -2.20, 1.008, 0); lip.rotation.z = 0.06; // decklid lip
+
+/* license plate (canvas texture) */
+function plateTexture(){
+  const cv = document.createElement('canvas'); cv.width=512; cv.height=256;
+  const x = cv.getContext('2d');
+  x.fillStyle='#f2f3f5'; x.fillRect(0,0,512,256);
+  x.strokeStyle='#274472'; x.lineWidth=10; x.strokeRect(8,8,496,240);
+  x.fillStyle='#274472'; x.textAlign='center';
+  x.font='700 44px system-ui'; x.fillText('VIRGINIA', 256, 62);
+  x.font='800 92px system-ui'; x.fillText('CAMARO', 256, 158);
+  x.font='600 36px system-ui'; x.fillText('2015 · 2LT', 256, 218);
+  const t = new THREE.CanvasTexture(cv); t.anisotropy=4; return t;
+}
+const plate = new THREE.Mesh(new THREE.PlaneGeometry(0.36,0.18),
+  new THREE.MeshStandardMaterial({map:plateTexture(), roughness:0.5}));
+plate.position.set(-2.515, 0.50, 0); plate.rotation.y = -Math.PI/2; car.add(plate);
+
+/* ---------- wheels: black 5-split-spoke, like his ---------- */
+function makeWheel(){
+  const w = new THREE.Group();
+  const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.352,0.352,0.245,40), tireM);
+  tire.rotation.x = Math.PI/2; tire.castShadow = true; w.add(tire);
+  const sidewall = new THREE.Mesh(new THREE.TorusGeometry(0.30,0.052,12,40), tireM);
+  w.add(sidewall);
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.155,0.155,0.02,28), discM);
+  disc.rotation.x = Math.PI/2; disc.position.z = 0.04; w.add(disc);
+  const cal = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.13,0.04),
+    new THREE.MeshStandardMaterial({color:0x8a8f96, metalness:0.8, roughness:0.4}));
+  cal.position.set(0.10,0.06,0.06); w.add(cal);
+  const rimFace = new THREE.Mesh(new THREE.CylinderGeometry(0.238,0.238,0.03,32), barrelM);
+  rimFace.rotation.x = Math.PI/2; rimFace.position.z = 0.085; w.add(rimFace);
+  for(let i=0;i<5;i++){
+    const a = (i/5)*Math.PI*2;
+    [-0.055,0.055].forEach(off=>{
+      const sp = new THREE.Mesh(new THREE.BoxGeometry(0.082,0.215,0.035), spokeM);
+      const ang = a+off;
+      sp.position.set(Math.sin(ang)*0.125, Math.cos(ang)*0.125, 0.105);
+      sp.rotation.z = -ang; w.add(sp);
+    });
+  }
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.052,0.052,0.03,20), spokeM);
+  hub.rotation.x = Math.PI/2; hub.position.z = 0.115; w.add(hub);
+  return w;
+}
+[[1.425,0.80],[1.425,-0.80],[-1.425,0.80],[-1.425,-0.80]].forEach(([wx,wz])=>{
+  /* dark arch + trim ring */
+  const arch = M(new THREE.CylinderGeometry(0.415,0.415,0.03,32), barrelM, wx, 0.352, (wz>0?0.878:-0.878));
+  arch.rotation.x = Math.PI/2;
+  const trim = M(new THREE.TorusGeometry(0.415,0.018,8,40,Math.PI), trimBlk, wx, 0.352, (wz>0?0.90:-0.90));
+  if(wz<0) trim.rotation.y = Math.PI;
+  const wheel = makeWheel();
+  if(wz<0) wheel.rotation.y = Math.PI;
+  wheel.position.set(wx, 0.352, wz);
+  wheel.userData.side = Math.sign(wz);
+  car.add(wheel); layerWheels.push(wheel);
+});
+
+/* headlight beams (toggle) */
+const beams = [];
+[-1,1].forEach(s=>{
+  const b = new THREE.SpotLight(0xcfe6ff, 0, 18, 0.42, 0.55, 1.2);
+  b.position.set(2.45, 0.73, s*0.575);
+  b.target.position.set(11, 0.1, s*0.9);
+  car.add(b); car.add(b.target); beams.push(b);
+});
+
+/* ---------- UI wiring ---------- */
+let lightsOn = false;
+const btnLights = document.getElementById('btnLights');
+btnLights.onclick = ()=>{
+  lightsOn = !lightsOn;
+  headLensM.emissiveIntensity = lightsOn ? 2.4 : 0.25;
+  haloM.emissiveIntensity = lightsOn ? 2.6 : 0.7;
+  redLensM.emissiveIntensity = lightsOn ? 1.5 : 0.55;
+  beams.forEach(b=> b.intensity = lightsOn ? 260 : 0);
+  btnLights.classList.toggle('on', lightsOn);
+  btnLights.textContent = lightsOn ? '💡 Headlights: On' : '💡 Headlights';
+};
+const btnSpin = document.getElementById('btnSpin');
+btnSpin.onclick = ()=>{
+  controls.autoRotate = !controls.autoRotate;
+  btnSpin.classList.toggle('on', controls.autoRotate);
+  btnSpin.textContent = controls.autoRotate ? '⏸ Spin: On' : '▶ Spin: Off';
+};
+const views = {
+  front34:[0.821,0.186,7.83], side:[0,0.10,7.8], rear34:[-2.30,0.22,7.9],
+  top:[0.8,1.45,9.5], front:[Math.PI/2,0.05,7.8]
+};
+document.querySelectorAll('[data-view]').forEach(b=>{
+  b.onclick = ()=>{
+    const v = views[b.dataset.view];
+    controls.setView(v[0], v[1], v[2]);
+  };
+});
+document.querySelectorAll('.sw').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('.sw').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    paint.color.set(parseInt(b.dataset.color));
+    document.getElementById('colorName').textContent =
+      b.dataset.name + (b.dataset.name==='Black' ? ' — his car' : ' — factory color');
+  };
+});
+
+/* layers: glasshouse lifts, wheels drop & step out — the model, pulled apart */
+let layersOn = false, layerT = 0;
+const btnLayers = document.getElementById('btnLayers');
+btnLayers.onclick = ()=>{
+  layersOn = !layersOn;
+  btnLayers.classList.toggle('on', layersOn);
+  btnLayers.textContent = layersOn ? '🧱 Layers: Apart' : '🧱 Layers';
+};
+
+/* ---------- loop / resize ---------- */
+function resize(){
+  const st = document.getElementById('stage');
+  const w = st.clientWidth, h = st.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+const layerClock = new THREE.Clock();
+renderer.setAnimationLoop(()=>{
+  const dt = Math.min(layerClock.getDelta(), 0.1);
+  layerT += ((layersOn?1:0) - layerT) * Math.min(1, dt*4.5);
+  if(Math.abs(layerT) > 0.001 || layersOn){
+    layerGlass.forEach(m=>{ m.position.y = m.userData.baseY + layerT*0.55; });
+    layerWheels.forEach(w=>{ w.position.y = 0.352 - layerT*0.05; w.position.z = w.userData.side*(0.80 + layerT*0.30); });
+  }
+  controls.update(dt);
+  renderer.render(scene, camera);
+});
+window.__camaroReady = true;
+window.__debug = ()=>({layerT, glassY: layerGlass.length?layerGlass[0].position.y:null, wheelZ: layerWheels.length?layerWheels[0].position.z:null, wheels: layerWheels.length});
+};
+</script>
+<script>
+/* three.js ships as base64 text parts (host file-size limit) — decoded and reassembled here, then the model starts */
+(async ()=>{
+  const PARTS = 24;
+  try{
+    const texts = await Promise.all(Array.from({length:PARTS}, (_, i)=>
+      fetch('p' + String(i).padStart(2,'0') + '.txt')
+        .then(r=>{ if(!r.ok) throw new Error('part ' + i + ' HTTP ' + r.status); return r.text(); })));
+    const bin = atob(texts.join(''));
+    const bytes = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+    const blob = new Blob([bytes], {type:'text/javascript'});
+    const THREE = await import(URL.createObjectURL(blob));
+    window.__initCamaro(THREE);
+  }catch(e){
+    document.getElementById('fallback').style.display = 'flex';
+    console.error('Camaro model failed to load', e);
+  }
+})();
+</script>
+</body>
+</html>
